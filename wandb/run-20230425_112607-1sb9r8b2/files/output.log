@@ -1,0 +1,541 @@
+task:
+    name: FrankaPickObject
+    env:
+        numEnvs: 256
+        envSpacing: 1.5
+        episodeLength: 500
+        obj_type: banana
+        object_pos_init: [0.5, 0.0]
+        object_pos_delta: [0.1, 0.2]
+        goal_height: 0.8
+        obs_type: pixels
+        im_size: 224
+        cam:
+            w: 298
+            h: 224
+            fov: 120
+            ss: 2
+            loc_p: [0.04, 0.0, 0.045]
+            loc_r: [180, -90.0, 0.0]
+        dofVelocityScale: 0.1
+        actionScale: 7.5
+        objectDistRewardScale: 0.08
+        liftBonusRewardScale: 4.0
+        goalDistRewardScale: 1.28
+        goalBonusRewardScale: 4.0
+        actionPenaltyScale: 0.01
+        asset:
+            assetRoot: assets
+            assetFileNameFranka: urdf/franka_description/robots/franka_panda.urdf
+    sim:
+        substeps: 1
+        physx:
+            num_threads: 4
+            solver_type: 1
+            num_position_iterations: 12
+            num_velocity_iterations: 1
+            contact_offset: 0.005
+            rest_offset: 0.0
+            bounce_threshold_velocity: 0.2
+            max_depenetration_velocity: 1000.0
+            default_buffer_size_multiplier: 5.0
+            always_use_articulations: False
+    task:
+        randomize: False
+train:
+    seed: 0
+    torch_deterministic: False
+    encoder:
+        name: vits-mae-hoi
+        pretrain_dir: none
+        freeze: True
+        emb_dim: 128
+    policy:
+        pi_hid_sizes: [256, 128, 64]
+        vf_hid_sizes: [256, 128, 64]
+    learn:
+        agent_name: franka_ppo
+        test: False
+        resume: 0
+        save_interval: 50
+        print_log: True
+        max_iterations: 10
+        cliprange: 0.1
+        ent_coef: 0
+        nsteps: 32
+        noptepochs: 10
+        nminibatches: 4
+        max_grad_norm: 1
+        optim_stepsize: 0.001
+        schedule: cos
+        gamma: 0.99
+        lam: 0.95
+        init_noise_std: 1.0
+        log_interval: 1
+physics_engine: physx
+pipeline: gpu
+sim_device: cuda:0
+rl_device: cuda:0
+graphics_device_id: 0
+num_gpus: 1
+test: False
+resume: 0
+logdir: ./tmp
+cptdir:
+headless: True
+Wrote config to: ./tmp/config.yaml
+Setting seed: 0
+Setting sim options
+num franka bodies:  11
+num franka dofs:  9
+RL device:  cuda:0
+Encoder(
+  (backbone): VisionTransformer(
+    (patch_embed): PatchEmbed(
+      (proj): Conv2d(3, 384, kernel_size=(16, 16), stride=(16, 16))
+      (norm): Identity()
+    )
+    (pos_drop): Dropout(p=0.0, inplace=False)
+    (norm_pre): Identity()
+    (blocks): Sequential(
+      (0): Block(
+        (norm1): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (attn): Attention(
+          (qkv): Linear(in_features=384, out_features=1152, bias=True)
+          (attn_drop): Dropout(p=0.0, inplace=False)
+          (proj): Linear(in_features=384, out_features=384, bias=True)
+          (proj_drop): Dropout(p=0.0, inplace=False)
+        )
+        (ls1): Identity()
+        (drop_path1): Identity()
+        (norm2): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (mlp): Mlp(
+          (fc1): Linear(in_features=384, out_features=1536, bias=True)
+          (act): GELU(approximate='none')
+          (drop1): Dropout(p=0.0, inplace=False)
+          (fc2): Linear(in_features=1536, out_features=384, bias=True)
+          (drop2): Dropout(p=0.0, inplace=False)
+        )
+        (ls2): Identity()
+        (drop_path2): Identity()
+      )
+      (1): Block(
+        (norm1): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (attn): Attention(
+          (qkv): Linear(in_features=384, out_features=1152, bias=True)
+          (attn_drop): Dropout(p=0.0, inplace=False)
+          (proj): Linear(in_features=384, out_features=384, bias=True)
+          (proj_drop): Dropout(p=0.0, inplace=False)
+        )
+        (ls1): Identity()
+        (drop_path1): Identity()
+        (norm2): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (mlp): Mlp(
+          (fc1): Linear(in_features=384, out_features=1536, bias=True)
+          (act): GELU(approximate='none')
+          (drop1): Dropout(p=0.0, inplace=False)
+          (fc2): Linear(in_features=1536, out_features=384, bias=True)
+          (drop2): Dropout(p=0.0, inplace=False)
+        )
+        (ls2): Identity()
+        (drop_path2): Identity()
+      )
+      (2): Block(
+        (norm1): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (attn): Attention(
+          (qkv): Linear(in_features=384, out_features=1152, bias=True)
+          (attn_drop): Dropout(p=0.0, inplace=False)
+          (proj): Linear(in_features=384, out_features=384, bias=True)
+          (proj_drop): Dropout(p=0.0, inplace=False)
+        )
+        (ls1): Identity()
+        (drop_path1): Identity()
+        (norm2): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (mlp): Mlp(
+          (fc1): Linear(in_features=384, out_features=1536, bias=True)
+          (act): GELU(approximate='none')
+          (drop1): Dropout(p=0.0, inplace=False)
+          (fc2): Linear(in_features=1536, out_features=384, bias=True)
+          (drop2): Dropout(p=0.0, inplace=False)
+        )
+        (ls2): Identity()
+        (drop_path2): Identity()
+      )
+      (3): Block(
+        (norm1): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (attn): Attention(
+          (qkv): Linear(in_features=384, out_features=1152, bias=True)
+          (attn_drop): Dropout(p=0.0, inplace=False)
+          (proj): Linear(in_features=384, out_features=384, bias=True)
+          (proj_drop): Dropout(p=0.0, inplace=False)
+        )
+        (ls1): Identity()
+        (drop_path1): Identity()
+        (norm2): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (mlp): Mlp(
+          (fc1): Linear(in_features=384, out_features=1536, bias=True)
+          (act): GELU(approximate='none')
+          (drop1): Dropout(p=0.0, inplace=False)
+          (fc2): Linear(in_features=1536, out_features=384, bias=True)
+          (drop2): Dropout(p=0.0, inplace=False)
+        )
+        (ls2): Identity()
+        (drop_path2): Identity()
+      )
+      (4): Block(
+        (norm1): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (attn): Attention(
+          (qkv): Linear(in_features=384, out_features=1152, bias=True)
+          (attn_drop): Dropout(p=0.0, inplace=False)
+          (proj): Linear(in_features=384, out_features=384, bias=True)
+          (proj_drop): Dropout(p=0.0, inplace=False)
+        )
+        (ls1): Identity()
+        (drop_path1): Identity()
+        (norm2): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (mlp): Mlp(
+          (fc1): Linear(in_features=384, out_features=1536, bias=True)
+          (act): GELU(approximate='none')
+          (drop1): Dropout(p=0.0, inplace=False)
+          (fc2): Linear(in_features=1536, out_features=384, bias=True)
+          (drop2): Dropout(p=0.0, inplace=False)
+        )
+        (ls2): Identity()
+        (drop_path2): Identity()
+      )
+      (5): Block(
+        (norm1): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (attn): Attention(
+          (qkv): Linear(in_features=384, out_features=1152, bias=True)
+          (attn_drop): Dropout(p=0.0, inplace=False)
+          (proj): Linear(in_features=384, out_features=384, bias=True)
+          (proj_drop): Dropout(p=0.0, inplace=False)
+        )
+        (ls1): Identity()
+        (drop_path1): Identity()
+        (norm2): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (mlp): Mlp(
+          (fc1): Linear(in_features=384, out_features=1536, bias=True)
+          (act): GELU(approximate='none')
+          (drop1): Dropout(p=0.0, inplace=False)
+          (fc2): Linear(in_features=1536, out_features=384, bias=True)
+          (drop2): Dropout(p=0.0, inplace=False)
+        )
+        (ls2): Identity()
+        (drop_path2): Identity()
+      )
+      (6): Block(
+        (norm1): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (attn): Attention(
+          (qkv): Linear(in_features=384, out_features=1152, bias=True)
+          (attn_drop): Dropout(p=0.0, inplace=False)
+          (proj): Linear(in_features=384, out_features=384, bias=True)
+          (proj_drop): Dropout(p=0.0, inplace=False)
+        )
+        (ls1): Identity()
+        (drop_path1): Identity()
+        (norm2): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (mlp): Mlp(
+          (fc1): Linear(in_features=384, out_features=1536, bias=True)
+          (act): GELU(approximate='none')
+          (drop1): Dropout(p=0.0, inplace=False)
+          (fc2): Linear(in_features=1536, out_features=384, bias=True)
+          (drop2): Dropout(p=0.0, inplace=False)
+        )
+        (ls2): Identity()
+        (drop_path2): Identity()
+      )
+      (7): Block(
+        (norm1): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (attn): Attention(
+          (qkv): Linear(in_features=384, out_features=1152, bias=True)
+          (attn_drop): Dropout(p=0.0, inplace=False)
+          (proj): Linear(in_features=384, out_features=384, bias=True)
+          (proj_drop): Dropout(p=0.0, inplace=False)
+        )
+        (ls1): Identity()
+        (drop_path1): Identity()
+        (norm2): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (mlp): Mlp(
+          (fc1): Linear(in_features=384, out_features=1536, bias=True)
+          (act): GELU(approximate='none')
+          (drop1): Dropout(p=0.0, inplace=False)
+          (fc2): Linear(in_features=1536, out_features=384, bias=True)
+          (drop2): Dropout(p=0.0, inplace=False)
+        )
+        (ls2): Identity()
+        (drop_path2): Identity()
+      )
+      (8): Block(
+        (norm1): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (attn): Attention(
+          (qkv): Linear(in_features=384, out_features=1152, bias=True)
+          (attn_drop): Dropout(p=0.0, inplace=False)
+          (proj): Linear(in_features=384, out_features=384, bias=True)
+          (proj_drop): Dropout(p=0.0, inplace=False)
+        )
+        (ls1): Identity()
+        (drop_path1): Identity()
+        (norm2): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (mlp): Mlp(
+          (fc1): Linear(in_features=384, out_features=1536, bias=True)
+          (act): GELU(approximate='none')
+          (drop1): Dropout(p=0.0, inplace=False)
+          (fc2): Linear(in_features=1536, out_features=384, bias=True)
+          (drop2): Dropout(p=0.0, inplace=False)
+        )
+        (ls2): Identity()
+        (drop_path2): Identity()
+      )
+      (9): Block(
+        (norm1): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (attn): Attention(
+          (qkv): Linear(in_features=384, out_features=1152, bias=True)
+          (attn_drop): Dropout(p=0.0, inplace=False)
+          (proj): Linear(in_features=384, out_features=384, bias=True)
+          (proj_drop): Dropout(p=0.0, inplace=False)
+        )
+        (ls1): Identity()
+        (drop_path1): Identity()
+        (norm2): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (mlp): Mlp(
+          (fc1): Linear(in_features=384, out_features=1536, bias=True)
+          (act): GELU(approximate='none')
+          (drop1): Dropout(p=0.0, inplace=False)
+          (fc2): Linear(in_features=1536, out_features=384, bias=True)
+          (drop2): Dropout(p=0.0, inplace=False)
+        )
+        (ls2): Identity()
+        (drop_path2): Identity()
+      )
+      (10): Block(
+        (norm1): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (attn): Attention(
+          (qkv): Linear(in_features=384, out_features=1152, bias=True)
+          (attn_drop): Dropout(p=0.0, inplace=False)
+          (proj): Linear(in_features=384, out_features=384, bias=True)
+          (proj_drop): Dropout(p=0.0, inplace=False)
+        )
+        (ls1): Identity()
+        (drop_path1): Identity()
+        (norm2): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (mlp): Mlp(
+          (fc1): Linear(in_features=384, out_features=1536, bias=True)
+          (act): GELU(approximate='none')
+          (drop1): Dropout(p=0.0, inplace=False)
+          (fc2): Linear(in_features=1536, out_features=384, bias=True)
+          (drop2): Dropout(p=0.0, inplace=False)
+        )
+        (ls2): Identity()
+        (drop_path2): Identity()
+      )
+      (11): Block(
+        (norm1): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (attn): Attention(
+          (qkv): Linear(in_features=384, out_features=1152, bias=True)
+          (attn_drop): Dropout(p=0.0, inplace=False)
+          (proj): Linear(in_features=384, out_features=384, bias=True)
+          (proj_drop): Dropout(p=0.0, inplace=False)
+        )
+        (ls1): Identity()
+        (drop_path1): Identity()
+        (norm2): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (mlp): Mlp(
+          (fc1): Linear(in_features=384, out_features=1536, bias=True)
+          (act): GELU(approximate='none')
+          (drop1): Dropout(p=0.0, inplace=False)
+          (fc2): Linear(in_features=1536, out_features=384, bias=True)
+          (drop2): Dropout(p=0.0, inplace=False)
+        )
+        (ls2): Identity()
+        (drop_path2): Identity()
+      )
+    )
+    (norm): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+    (fc_norm): Identity()
+  )
+  (projector): Linear(in_features=384, out_features=128, bias=True)
+)
+Linear(in_features=18, out_features=128, bias=True)
+Sequential(
+  (0): Linear(in_features=256, out_features=256, bias=True)
+  (1): SELU()
+  (2): Linear(in_features=256, out_features=128, bias=True)
+  (3): SELU()
+  (4): Linear(in_features=128, out_features=64, bias=True)
+  (5): SELU()
+  (6): Linear(in_features=64, out_features=9, bias=True)
+)
+Sequential(
+  (0): Linear(in_features=256, out_features=256, bias=True)
+  (1): SELU()
+  (2): Linear(in_features=256, out_features=128, bias=True)
+  (3): SELU()
+  (4): Linear(in_features=128, out_features=64, bias=True)
+  (5): SELU()
+  (6): Linear(in_features=64, out_features=1, bias=True)
+)
+/home/charliecheng/anaconda3/envs/mvp/lib/python3.7/site-packages/gym/spaces/box.py:112: UserWarning: [33mWARN: Box bound precision lowered by casting to float32
+  logger.warn(f"Box bound precision lowered by casting to {self.dtype}")
+/home/charliecheng/anaconda3/envs/mvp/lib/python3.7/site-packages/wandb/sdk/lib/import_hooks.py:243: DeprecationWarning: Deprecated since Python 3.4. Use importlib.util.find_spec() instead.
+  loader = importlib.find_loader(fullname, path)
+################################################################################
+                       [1m Learning iteration 0/10 
+                       Computation: 613 steps/s (collection: 13.124s, learning 0.224s)
+               Value function loss: 5.4611
+                    Surrogate loss: 0.0022
+             Mean action noise std: 1.00
+                       Mean reward: 5.25
+               Mean episode length: 15.00
+                 Mean success rate: 0.00
+                  Mean reward/step: 0.29
+       Mean episode length/episode: 26.51
+--------------------------------------------------------------------------------
+                   Total timesteps: 8192
+                    Iteration time: 13.35s
+                        Total time: 13.35s
+                               ETA: 133.5s
+################################################################################
+                       [1m Learning iteration 1/10 
+                       Computation: 682 steps/s (collection: 11.788s, learning 0.217s)
+               Value function loss: 3.6219
+                    Surrogate loss: 0.0078
+             Mean action noise std: 1.00
+                       Mean reward: 7.24
+               Mean episode length: 21.67
+                 Mean success rate: 0.00
+                  Mean reward/step: 0.28
+       Mean episode length/episode: 20.84
+--------------------------------------------------------------------------------
+                   Total timesteps: 16384
+                    Iteration time: 12.00s
+                        Total time: 25.35s
+                               ETA: 114.1s
+################################################################################
+                       [1m Learning iteration 2/10 
+                       Computation: 685 steps/s (collection: 11.731s, learning 0.224s)
+               Value function loss: 4.4402
+                    Surrogate loss: -0.0000
+             Mean action noise std: 1.00
+                       Mean reward: 9.30
+               Mean episode length: 30.70
+                 Mean success rate: 0.00
+                  Mean reward/step: 0.28
+       Mean episode length/episode: 20.84
+--------------------------------------------------------------------------------
+                   Total timesteps: 24576
+                    Iteration time: 11.96s
+                        Total time: 37.31s
+                               ETA: 99.5s
+################################################################################
+                       [1m Learning iteration 3/10 
+                       Computation: 676 steps/s (collection: 11.877s, learning 0.227s)
+               Value function loss: 4.4741
+                    Surrogate loss: -0.0025
+             Mean action noise std: 0.99
+                       Mean reward: 11.36
+               Mean episode length: 39.03
+                 Mean success rate: 0.00
+                  Mean reward/step: 0.28
+       Mean episode length/episode: 19.41
+--------------------------------------------------------------------------------
+                   Total timesteps: 32768
+                    Iteration time: 12.10s
+                        Total time: 49.41s
+                               ETA: 86.5s
+################################################################################
+                       [1m Learning iteration 4/10 
+                       Computation: 673 steps/s (collection: 11.931s, learning 0.226s)
+               Value function loss: 4.5666
+                    Surrogate loss: -0.0038
+             Mean action noise std: 0.99
+                       Mean reward: 12.07
+               Mean episode length: 43.88
+                 Mean success rate: 0.00
+                  Mean reward/step: 0.27
+       Mean episode length/episode: 22.14
+--------------------------------------------------------------------------------
+                   Total timesteps: 40960
+                    Iteration time: 12.16s
+                        Total time: 61.57s
+                               ETA: 73.9s
+################################################################################
+                       [1m Learning iteration 5/10 
+                       Computation: 672 steps/s (collection: 11.964s, learning 0.222s)
+               Value function loss: 11.8485
+                    Surrogate loss: -0.0025
+             Mean action noise std: 0.99
+                       Mean reward: 12.57
+               Mean episode length: 45.24
+                 Mean success rate: 0.00
+                  Mean reward/step: 0.29
+       Mean episode length/episode: 21.85
+--------------------------------------------------------------------------------
+                   Total timesteps: 49152
+                    Iteration time: 12.19s
+                        Total time: 73.76s
+                               ETA: 61.5s
+################################################################################
+                       [1m Learning iteration 6/10 
+                       Computation: 670 steps/s (collection: 11.993s, learning 0.224s)
+               Value function loss: 8.3615
+                    Surrogate loss: -0.0051
+             Mean action noise std: 0.99
+                       Mean reward: 15.06
+               Mean episode length: 54.57
+                 Mean success rate: 0.00
+                  Mean reward/step: 0.30
+       Mean episode length/episode: 22.14
+--------------------------------------------------------------------------------
+                   Total timesteps: 57344
+                    Iteration time: 12.22s
+                        Total time: 85.97s
+                               ETA: 49.1s
+################################################################################
+                       [1m Learning iteration 7/10 
+                       Computation: 669 steps/s (collection: 12.017s, learning 0.220s)
+               Value function loss: 10.4951
+                    Surrogate loss: -0.0051
+             Mean action noise std: 0.99
+                       Mean reward: 15.98
+               Mean episode length: 52.98
+                 Mean success rate: 0.00
+                  Mean reward/step: 0.29
+       Mean episode length/episode: 21.33
+--------------------------------------------------------------------------------
+                   Total timesteps: 65536
+                    Iteration time: 12.24s
+                        Total time: 98.21s
+                               ETA: 36.8s
+################################################################################
+                       [1m Learning iteration 8/10 
+                       Computation: 670 steps/s (collection: 11.983s, learning 0.230s)
+               Value function loss: 24.4499
+                    Surrogate loss: -0.0026
+             Mean action noise std: 0.99
+                       Mean reward: 16.53
+               Mean episode length: 55.73
+                 Mean success rate: 0.00
+                  Mean reward/step: 0.32
+       Mean episode length/episode: 25.36
+--------------------------------------------------------------------------------
+                   Total timesteps: 73728
+                    Iteration time: 12.21s
+                        Total time: 110.42s
+                               ETA: 24.5s
+################################################################################
+                       [1m Learning iteration 9/10 
+                       Computation: 664 steps/s (collection: 12.099s, learning 0.227s)
+               Value function loss: 34.9686
+                    Surrogate loss: -0.0002
+             Mean action noise std: 0.99
+                       Mean reward: 18.97
+               Mean episode length: 65.00
+                 Mean success rate: 0.00
+                  Mean reward/step: 0.34
+       Mean episode length/episode: 22.88
+--------------------------------------------------------------------------------
+                   Total timesteps: 81920
+                    Iteration time: 12.33s
+                        Total time: 122.75s
+                               ETA: 12.3s

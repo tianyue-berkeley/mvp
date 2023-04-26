@@ -1,0 +1,140 @@
+diff --git a/configs/ppo/config.yaml b/configs/ppo/config.yaml
+index e65dc5d..4674a14 100644
+--- a/configs/ppo/config.yaml
++++ b/configs/ppo/config.yaml
+@@ -1,4 +1,4 @@
+-
++wandb: True
+ physics_engine: "physx"
+ pipeline: "gpu"
+ sim_device: "cuda:0"
+@@ -13,7 +13,7 @@ cptdir: ""
+ headless: True
+ 
+ defaults:
+-  - task: FrankaPick
++  - task: FrankaPickObject
+   - train: ${task}
+   - hydra/job_logging: disabled
+ 
+diff --git a/configs/ppo/train/FrankaPickObject.yaml b/configs/ppo/train/FrankaPickObject.yaml
+index 0029886..cd016ec 100644
+--- a/configs/ppo/train/FrankaPickObject.yaml
++++ b/configs/ppo/train/FrankaPickObject.yaml
+@@ -12,7 +12,7 @@ learn:
+   save_interval: 50
+   print_log: True
+ 
+-  max_iterations: 2000
++  max_iterations: 50
+ 
+   cliprange: 0.1
+   ent_coef: 0
+diff --git a/configs/ppo/train/FrankaPickObjectPixels.yaml b/configs/ppo/train/FrankaPickObjectPixels.yaml
+index 1365993..413dbce 100644
+--- a/configs/ppo/train/FrankaPickObjectPixels.yaml
++++ b/configs/ppo/train/FrankaPickObjectPixels.yaml
+@@ -3,7 +3,7 @@ torch_deterministic: False
+ 
+ encoder:
+   name: vits-mae-hoi
+-  pretrain_dir: "/tmp/pretrained"
++  pretrain_dir: none
+   freeze: True
+   emb_dim: 128
+ 
+@@ -18,7 +18,7 @@ learn:
+   save_interval: 50
+   print_log: True
+ 
+-  max_iterations: 2000
++  max_iterations: 10
+ 
+   cliprange: 0.1
+   ent_coef: 0
+diff --git a/mvp/ppo/ppo.py b/mvp/ppo/ppo.py
+index 013b96b..ec59f40 100644
+--- a/mvp/ppo/ppo.py
++++ b/mvp/ppo/ppo.py
+@@ -18,6 +18,9 @@ from torch.utils.tensorboard import SummaryWriter
+ 
+ from mvp.ppo import RolloutStorage
+ 
++import wandb
++import PIL
++import numpy as np
+ 
+ class PPO:
+ 
+@@ -203,6 +206,9 @@ class PPO:
+             for it in range(self.current_learning_iteration, num_learning_iterations):
+                 start = time.time()
+ 
++                robot_frame = []
++                oracle_frame = []
++                pixel_frame = []
+                 # Rollout
+                 for _ in range(self.num_transitions_per_env):
+                     if self.apply_reset:
+@@ -222,6 +228,13 @@ class PPO:
+                     current_obs.copy_(next_obs)
+                     current_states.copy_(next_states)
+ 
++                    robot_obs = self.vec_env.compute_robot_obs()
++                    oracle_obs = self.vec_env.compute_oracle_obs()
++                    pixel_obs = self.vec_env.compute_pixel_obs()
++                    robot_frame.append(PIL.Image.fromarray(robot_obs[0, :, :, :].astype(np.uint8)))
++                    oracle_frame.append(PIL.Image.fromarray(oracle_obs[0, :, :, :].astype(np.uint8)))
++                    pixel_frame.append(PIL.Image.fromarray(pixel_obs[0, :, :, :].astype(np.uint8)))
++
+                     if self.print_log:
+                         cur_reward_sum[:] += rews
+                         cur_episode_length[:] += 1
+@@ -233,6 +246,16 @@ class PPO:
+                         cur_reward_sum[new_ids] = 0
+                         cur_episode_length[new_ids] = 0
+ 
++                robot_frame[0].save(
++                    "robot_obs.gif", save_all=True, append_images=robot_frame[1:], duration=100, loop=0
++                )
++                oracle_frame[0].save(
++                    "oracle_obs.gif", save_all=True, append_images=oracle_frame[1:], duration=100, loop=0
++                )
++                pixel_frame[0].save(
++                    "pixel_obs.gif", save_all=True, append_images=pixel_frame[1:], duration=100, loop=0
++                )
++                
+                 if self.print_log:
+                     rewbuffer.extend(reward_sum)
+                     lenbuffer.extend(episode_length)
+diff --git a/tools/train_ppo.py b/tools/train_ppo.py
+index 2f197c1..74605d6 100644
+--- a/tools/train_ppo.py
++++ b/tools/train_ppo.py
+@@ -11,10 +11,15 @@ from mvp.utils.hydra_utils import set_np_formatting, set_seed
+ from mvp.utils.hydra_utils import parse_sim_params, parse_task
+ from mvp.utils.hydra_utils import process_ppo
+ 
++import wandb
++
+ 
+ @hydra.main(config_name="config", config_path="../configs/ppo")
+ def train(cfg: omegaconf.DictConfig):
+ 
++    if cfg.wandb:
++        wandb.init(project='mvp', entity='chengtianyue', sync_tensorboard=True)
++
+     # Assume no multi-gpu training
+     assert cfg.num_gpus == 1
+ 
+@@ -38,7 +43,8 @@ def train(cfg: omegaconf.DictConfig):
+     # Perform training
+     ppo = process_ppo(env, cfg, cfg_dict, cfg.logdir, cfg.cptdir)
+     ppo.run(num_learning_iterations=cfg.train.learn.max_iterations, log_interval=cfg.train.learn.save_interval)
+-
+-
++    
++    if cfg.wandb:
++        wandb.finish()
+ if __name__ == '__main__':
+     train()

@@ -18,6 +18,9 @@ from torch.utils.tensorboard import SummaryWriter
 
 from mvp.ppo import RolloutStorage
 
+import wandb
+import PIL
+import numpy as np
 
 class PPO:
 
@@ -203,6 +206,7 @@ class PPO:
             for it in range(self.current_learning_iteration, num_learning_iterations):
                 start = time.time()
 
+                frame = []
                 # Rollout
                 for _ in range(self.num_transitions_per_env):
                     if self.apply_reset:
@@ -222,6 +226,10 @@ class PPO:
                     current_obs.copy_(next_obs)
                     current_states.copy_(next_states)
 
+                    obs_np = current_obs[0].detach().cpu().numpy() * 255
+                    obs_np = np.moveaxis(obs_np, 0, -1).astype(np.uint8)
+                    frame.append(PIL.Image.fromarray(obs_np))
+
                     if self.print_log:
                         cur_reward_sum[:] += rews
                         cur_episode_length[:] += 1
@@ -232,6 +240,10 @@ class PPO:
                         successes.extend(infos["successes"][new_ids][:, 0].cpu().numpy().tolist())
                         cur_reward_sum[new_ids] = 0
                         cur_episode_length[new_ids] = 0
+
+                frame[0].save(
+                    "frame.gif", save_all=True, append_images=frame[1:], duration=100, loop=0
+                )
 
                 if self.print_log:
                     rewbuffer.extend(reward_sum)

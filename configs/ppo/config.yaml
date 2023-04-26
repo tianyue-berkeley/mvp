@@ -1,4 +1,4 @@
-
+wandb: False
 physics_engine: "physx"
 pipeline: "gpu"
 sim_device: "cuda:0"
@@ -13,7 +13,7 @@ cptdir: ""
 headless: True
 
 defaults:
-  - task: FrankaPick
+  - task: FrankaPickObject
   - train: ${task}
   - hydra/job_logging: disabled
 

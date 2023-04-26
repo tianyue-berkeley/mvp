@@ -11,7 +11,7 @@ env:
 
   goal_height: 0.8
 
-  obs_type: oracle
+  obs_type: robot
 
   dofVelocityScale: 0.1
   actionScale: 7.5
